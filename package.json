@@ -1,0 +1,60 @@
+{
+  "name": "n8n-nodes-localai",
+  "version": "1.0.0",
+  "description": "LocalAI integration for n8n with AI Agent support",
+  "license": "MIT",
+  "homepage": "https://github.com/yourusername/n8n-nodes-localai",
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/n8n-nodes-localai.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials --ext .ts",
+    "lintfix": "eslint nodes credentials --ext .ts --fix",
+    "prepublishOnly": "npm run build && npm run lint"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/LocalAIApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/LocalAIChatModel/LocalAIChatModel.node.js",
+      "dist/nodes/LocalAI/LocalAI.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "gulp": "^4.0.2",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@langchain/core": "^0.2.0",
+    "n8n-workflow": "^1.0.0"
+  },
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "localai",
+    "ai",
+    "llm",
+    "langchain",
+    "chat-model",
+    "language-model"
+  ]
+}

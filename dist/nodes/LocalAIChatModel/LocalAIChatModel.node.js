@@ -3,26 +3,39 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LocalAIChatModel = void 0;
 const chat_models_1 = require("@langchain/core/language_models/chat_models");
 const messages_1 = require("@langchain/core/messages");
-class LocalAIChatModelLc extends chat_models_1.BaseChatModel {
+/**
+ * Internal LangChain-compatible Chat Model implementation
+ * This class extends BaseChatModel from LangChain and implements
+ * the actual communication with LocalAI
+ */
+class LocalAIChatModelLLM extends chat_models_1.BaseChatModel {
     constructor(fields) {
-        var _a, _b, _c, _d, _e;
+        var _a, _b;
         super({});
         this.baseUrl = fields.baseUrl.replace(/\/$/, '');
         this.apiKey = fields.apiKey || '';
         this.modelName = fields.model;
         this.temperature = (_a = fields.temperature) !== null && _a !== void 0 ? _a : 0.7;
         this.maxTokens = (_b = fields.maxTokens) !== null && _b !== void 0 ? _b : 2048;
-        this.topP = (_c = fields.topP) !== null && _c !== void 0 ? _c : 1;
-        this.frequencyPenalty = (_d = fields.frequencyPenalty) !== null && _d !== void 0 ? _d : 0;
-        this.presencePenalty = (_e = fields.presencePenalty) !== null && _e !== void 0 ? _e : 0;
     }
+    /**
+     * Identifies this LLM type for LangChain
+     */
     _llmType() {
         return 'localai';
     }
+    /**
+     * Required by LangChain for output combination
+     */
     _combineLLMOutput() {
         return {};
     }
+    /**
+     * Main method that communicates with LocalAI API
+     * This is called by LangChain when the AI Agent needs a response
+     */
     async _generate(messages, options, runManager) {
+        // Convert LangChain messages to LocalAI format
         const formattedMessages = messages.map((msg) => {
             let role;
             if (msg instanceof messages_1.HumanMessage) {
@@ -42,24 +55,20 @@ class LocalAIChatModelLc extends chat_models_1.BaseChatModel {
                 content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
             };
         });
-        const requestBody = {
-            model: this.modelName,
-            messages: formattedMessages,
-            temperature: this.temperature,
-            max_tokens: this.maxTokens,
-            top_p: this.topP,
-            frequency_penalty: this.frequencyPenalty,
-            presence_penalty: this.presencePenalty,
-            stream: false,
-        };
         try {
+            // Call LocalAI API (OpenAI-compatible endpoint)
             const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` }),
                 },
-                body: JSON.stringify(requestBody),
+                body: JSON.stringify({
+                    model: this.modelName,
+                    messages: formattedMessages,
+                    temperature: this.temperature,
+                    max_tokens: this.maxTokens,
+                }),
             });
             if (!response.ok) {
                 const errorText = await response.text();
@@ -70,19 +79,12 @@ class LocalAIChatModelLc extends chat_models_1.BaseChatModel {
                 throw new Error('No response from LocalAI');
             }
             const text = data.choices[0].message.content;
-            const generation = {
-                text,
-                message: new messages_1.AIMessage(text),
-                generationInfo: {
-                    finishReason: data.choices[0].finish_reason,
-                },
-            };
+            // Return in LangChain format
             return {
-                generations: [generation],
-                llmOutput: {
-                    tokenUsage: data.usage,
-                    model: data.model,
-                },
+                generations: [{
+                        text,
+                        message: new messages_1.AIMessage(text),
+                    }],
             };
         }
         catch (error) {
@@ -90,6 +92,10 @@ class LocalAIChatModelLc extends chat_models_1.BaseChatModel {
         }
     }
 }
+/**
+ * n8n Node Definition
+ * This is what appears in the n8n UI and can be connected to AI Agent
+ */
 class LocalAIChatModel {
     constructor() {
         this.description = {
@@ -98,12 +104,10 @@ class LocalAIChatModel {
             icon: 'file:localai.svg',
             group: ['transform'],
             version: 1,
-            description: 'Language Model for AI Agent nodes using LocalAI',
+            description: 'Chat Model for AI Agent using LocalAI',
             defaults: {
                 name: 'LocalAI Chat Model',
             },
-            inputs: [],
-            outputs: [],
             codex: {
                 categories: ['AI'],
                 subcategories: {
@@ -117,6 +121,9 @@ class LocalAIChatModel {
                     ],
                 },
             },
+            // IMPORTANT: This makes it work with AI Agent
+            inputs: [],
+            outputs: [],
             credentials: [
                 {
                     name: 'localAIApi',
@@ -150,69 +157,38 @@ class LocalAIChatModel {
                                 numberStepSize: 0.1,
                             },
                             default: 0.7,
-                            description: 'Controls randomness. Lower values make output more focused and deterministic. Higher values make it more random.',
+                            description: 'Controls randomness. Lower = more focused, Higher = more random.',
                         },
                         {
                             displayName: 'Max Tokens',
                             name: 'maxTokens',
                             type: 'number',
                             default: 2048,
-                            description: 'Maximum number of tokens to generate in the response',
-                        },
-                        {
-                            displayName: 'Top P',
-                            name: 'topP',
-                            type: 'number',
-                            typeOptions: {
-                                minValue: 0,
-                                maxValue: 1,
-                                numberStepSize: 0.1,
-                            },
-                            default: 1,
-                            description: 'Nucleus sampling parameter. Alternative to temperature for controlling randomness.',
-                        },
-                        {
-                            displayName: 'Frequency Penalty',
-                            name: 'frequencyPenalty',
-                            type: 'number',
-                            typeOptions: {
-                                minValue: -2,
-                                maxValue: 2,
-                                numberStepSize: 0.1,
-                            },
-                            default: 0,
-                            description: 'Penalizes tokens based on their frequency in the text so far. Reduces repetition.',
-                        },
-                        {
-                            displayName: 'Presence Penalty',
-                            name: 'presencePenalty',
-                            type: 'number',
-                            typeOptions: {
-                                minValue: -2,
-                                maxValue: 2,
-                                numberStepSize: 0.1,
-                            },
-                            default: 0,
-                            description: 'Penalizes tokens based on whether they appear in the text so far. Encourages new topics.',
+                            description: 'Maximum number of tokens to generate',
                         },
                     ],
                 },
             ],
         };
     }
+    /**
+     * CRITICAL: This method is what makes the node work with AI Agent
+     * It returns a LangChain-compatible chat model instance
+     * This is called when AI Agent needs to use the model
+     */
     async supplyData(itemIndex) {
+        // Get credentials configured in n8n
         const credentials = await this.getCredentials('localAIApi');
+        // Get node parameters
         const model = this.getNodeParameter('model', itemIndex);
         const options = this.getNodeParameter('options', itemIndex, {});
-        const chatModel = new LocalAIChatModelLc({
+        // Create and return the LangChain chat model instance
+        const chatModel = new LocalAIChatModelLLM({
             baseUrl: credentials.baseUrl,
             apiKey: credentials.apiKey,
             model,
             temperature: options.temperature,
             maxTokens: options.maxTokens,
-            topP: options.topP,
-            frequencyPenalty: options.frequencyPenalty,
-            presencePenalty: options.presencePenalty,
         });
         return {
             response: chatModel,

@@ -13,7 +13,7 @@ class LocalAIApi {
                 type: 'string',
                 default: 'http://localhost:8080',
                 placeholder: 'http://localhost:8080',
-                description: 'The base URL of your LocalAI instance (e.g., http://localhost:8080 or http://localai:8080 in Docker)',
+                description: 'The base URL of your LocalAI instance',
                 required: true,
             },
             {
@@ -24,7 +24,7 @@ class LocalAIApi {
                     password: true,
                 },
                 default: '',
-                description: 'Optional API key if authentication is enabled in LocalAI',
+                description: 'Optional API key if authentication is enabled',
             },
         ];
         this.authenticate = {

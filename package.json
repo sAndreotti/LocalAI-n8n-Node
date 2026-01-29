@@ -30,8 +30,7 @@
       "dist/credentials/LocalAIApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/LocalAIChatModel/LocalAIChatModel.node.js",
-      "dist/nodes/LocalAI/LocalAI.node.js"
+      "dist/nodes/LocalAIChatModel/LocalAIChatModel.node.js"
     ]
   },
   "devDependencies": {
@@ -51,10 +50,8 @@
     "n8n-community-node-package",
     "n8n",
     "localai",
-    "ai",
-    "llm",
-    "langchain",
     "chat-model",
-    "language-model"
+    "langchain",
+    "ai-agent"
   ]
 }

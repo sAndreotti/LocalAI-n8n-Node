@@ -3,14 +3,14 @@
   "version": "1.0.1",
   "description": "LocalAI integration for n8n with AI Agent support",
   "license": "MIT",
-  "homepage": "https://github.com/yourusername/n8n-nodes-localai",
+  "homepage": "https://github.com/sAndreotti/LocalAI-n8n-Node#readme",
   "author": {
-    "name": "Your Name",
-    "email": "your.email@example.com"
+    "name": "Stefano Andreotti",
+    "email": "andreotti.stefano.sa@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/n8n-nodes-localai.git"
+    "url": "git+https://github.com/sAndreotti/LocalAI-n8n-Node.git"
   },
   "main": "index.js",
   "scripts": {

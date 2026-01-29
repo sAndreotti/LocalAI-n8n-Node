@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-localai",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "LocalAI integration for n8n with AI Agent support",
   "license": "MIT",
   "homepage": "https://github.com/sAndreotti/LocalAI-n8n-Node#readme",
